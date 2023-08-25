@@ -12,7 +12,7 @@ headers = {
 def make_voice_request(text):
     data = {
         "text": text,
-        "model_id": "D38z5RcWu1voky8WS1ja",
+        "model_id": "eleven_multilingual_v1",
         "voice_settings": {
             "stability": 0.5,
             "similarity_boost": 0.5
