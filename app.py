@@ -8,7 +8,32 @@ app = Flask(__name__)
 import torch
 from torch import nn
 import torch.nn.functional as F
+import requests
 
+CHUNK_SIZE = 1024
+url = "https://api.elevenlabs.io/v1/text-to-speech/D38z5RcWu1voky8WS1ja"
+
+headers = {
+  "Accept": "audio/mpeg",
+  "Content-Type": "application/json",
+  "xi-api-key": "ec2e2953ad74abcf80e9a024e0b743b5"
+}
+
+def make_voice_request(text):
+    data = {
+        "text": text,
+        "model_id": "eleven_multilingual_v1",
+        "voice_settings": {
+            "stability": 0.5,
+            "similarity_boost": 0.5
+        }
+    }
+
+    response = requests.post(url, json=data, headers=headers)
+    with open('output.mp3', 'wb') as f:
+        for chunk in response.iter_content(chunk_size=CHUNK_SIZE):
+            if chunk:
+                f.write(chunk)
 
 def xyz(pose_landmark):
     return [pose_landmark.x, pose_landmark.y, pose_landmark.z]
@@ -81,6 +106,7 @@ cap = cv2.VideoCapture(1)
 frame_counter = 0
 SAMPLE_RATE = 1000000000
 
+encodings = {0: 'as you inhale lengthen through the sides of your waist', 1: 'begin to straighten your back leg by pressing the heel back and lifting the inner thigh', 2: 'bring one leg back one leg forward with your fingertips underneath your shoulders on the mat', 3: 'bring palms to touch and gaze up towards your hands', 4: 'come into a low lunge', 5: 'lift your back ribs as you exhale', 6: 'lift your lower belly and draw your ribs in', 7: 'lower back down into a lunge', 8: 'make sure that your feet are hips-width in distance and that your front leg shin is in a nice straight line over the top of the front foot', 9: 'perfect', 10: 'place your hands on your front leg knee', 11: 'press your torso up over your pelvis', 12: 'raise your arms up towards the sky', 13: 'squeeze your inner thighs together', 14: 'turn to your side', 15: 'with the ball of the back foot stacked underneath the heel put a little bend in your back leg knee'}
 
 def process_frame(frame):
     # Convert frame to RGB (MediaPipe requires RGB input)
@@ -107,8 +133,14 @@ def process_frame(frame):
             if i % SAMPLE_RATE == 0:
                 # One way to get data for model
                 row = list(chain.from_iterable([xyz(landmark) for landmark in results.pose_landmarks.landmark]))
-                
-                print(row, "ROW!!!")
+                row.extend([0,1,0])
+                result = model(torch.tensor(row, dtype=torch.float32).unsqueeze(0))
+                print(result)
+
+                max_index = torch.argmax(result, 1).item()
+                print(max_index)
+                print(encodings[max_index])
+                make_voice_request(encodings[max_index])
 
     return frame
 
