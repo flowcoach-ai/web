@@ -3,7 +3,6 @@ import cv2
 import mediapipe as mp
 from itertools import chain
 import time
-from voice import create_voice_request
 
 app = Flask(__name__)
 import torch
