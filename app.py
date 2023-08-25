@@ -3,6 +3,7 @@ import cv2
 import mediapipe as mp
 from itertools import chain
 import time
+from voice import create_voice_request
 
 
 def xyz(pose_landmark):
@@ -112,6 +113,9 @@ def process_frame(frame):
                 landmarks = []  # Store landmarks for processing
                 row = list(chain.from_iterable([xyz(landmark) for landmark in results.pose_landmarks.landmark]))
                 hi.append(row)
+
+                # model_response = call_to_model()
+                # create_voice_request(model_response)
 
                 landmarks.append([landmark.x, landmark.y, landmark.z])
                 print(landmarks, "landmarks")
