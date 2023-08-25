@@ -5,23 +5,20 @@ from itertools import chain
 import time
 from voice import create_voice_request
 
-
-def xyz(pose_landmark):
-    return [pose_landmark.x, pose_landmark.y, pose_landmark.z]
-
-
 app = Flask(__name__)
 import torch
 from torch import nn
 import torch.nn.functional as F
 
+
+def xyz(pose_landmark):
+    return [pose_landmark.x, pose_landmark.y, pose_landmark.z]
+
+
 INPUT_DIM = 102  # X is 102-dimensional
 HIDDEN_DIM = INPUT_DIM * 4  # Center-most latent space vector will have length of 408
 NUM_CLASSES = 16  # 16 classes
 
-print(INPUT_DIM)
-print(HIDDEN_DIM)
-print(NUM_CLASSES)
 POSE_CONNECTIONS = [
     (0, 1), (1, 2), (2, 3), (3, 4),  # Right arm
     (0, 5), (5, 6), (6, 7), (7, 8),  # Left arm
@@ -94,7 +91,6 @@ def process_frame(frame):
     results = pose.process(frame_rgb)
 
     if results.pose_landmarks:
-        hi = []
         landmark_list = []
         for i, landmark in enumerate(results.pose_landmarks.landmark):
             x, y = int(landmark.x * frame.shape[1]), int(landmark.y * frame.shape[0])
@@ -110,15 +106,9 @@ def process_frame(frame):
 
         for i, landmark in enumerate(results.pose_landmarks.landmark):
             if i % SAMPLE_RATE == 0:
-                landmarks = []  # Store landmarks for processing
+                # One way to get data for model
                 row = list(chain.from_iterable([xyz(landmark) for landmark in results.pose_landmarks.landmark]))
-                hi.append(row)
 
-                # model_response = call_to_model()
-                # create_voice_request(model_response)
-
-                landmarks.append([landmark.x, landmark.y, landmark.z])
-                print(landmarks, "landmarks")
                 print(row, "ROW!!!")
 
     return frame
